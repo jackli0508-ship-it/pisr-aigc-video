@@ -27,6 +27,27 @@ Turn one selected PISR scene into a coherent short-form fashion video built from
 
 Default to a 9:16, 12–15 second social video with four clips of roughly 3–4 seconds each unless the user specifies otherwise.
 
+## HyperFrames dependency gate
+
+Run this gate before planning or executing the first `pisr-aigc-video` job on a computer.
+
+1. Check whether the `hyperframes` entry skill is available in the current Codex skill catalog.
+2. If it is missing, tell the user that the required HyperFrames dependency is being installed, then install the official published skill set:
+
+   ```bash
+   npx skills add heygen-com/hyperframes --all
+   ```
+
+3. After installation, read the installed `hyperframes` entry skill and follow its routing and lifecycle instructions. Verify the installation with:
+
+   ```bash
+   npx hyperframes skills check --json
+   ```
+
+4. If HyperFrames is present but its core skill set is incomplete or stale, refresh it with `npx hyperframes skills update`, then rerun the check.
+5. Reuse an existing valid installation. Do not reinstall on every job, overwrite an existing HyperFrames project, or silently reconstruct HyperFrames behavior from memory.
+6. If installation or verification fails, surface the exact error and stop before the assembly stage; retain completed stills and Lovart clips so the job can resume after HyperFrames is available.
+
 ## Read the appropriate references
 
 - Read [references/workflow.md](references/workflow.md) before planning or executing a video job.
@@ -58,7 +79,7 @@ Use this when completed images already exist.
 
 ## Core workflow
 
-1. Run the Delivery Intent Gate and Scene Selection Gate.
+1. Run the HyperFrames Dependency Gate, then the Delivery Intent Gate and Scene Selection Gate.
 2. Create or recover the `scene_group` manifest.
 3. Produce or collect four clean stills.
 4. Run the Replacement Gate on every still before any animation.
