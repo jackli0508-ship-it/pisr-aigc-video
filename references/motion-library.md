@@ -73,6 +73,9 @@ Plan transitions before generation.
 - Use a camera push before a closer crop, not before a wider reverse movement.
 - Use restrained crossfades only when background geometry is sufficiently similar.
 - Prefer hard cuts on musical beats when motion endpoints already align.
+- Avoid long crossfades on full-body subjects because the overlap creates a double-model ghost.
+- For a light-leak transition, place the scene swap under peak light coverage and reveal the incoming Look as the leak recedes.
+- Use one primary transition language across the sequence and expose it for user adjustment in the HyperFrames Studio preview.
 
 Do not use transitions to conceal severe identity, product, or scene inconsistency. Reject the clip instead.
 

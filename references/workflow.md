@@ -6,10 +6,11 @@
 2. Intake and scene selection
 3. Still production
 4. Motion planning
-5. Lovart execution
+5. Video model preflight and Lovart execution
 6. Motion review
-7. Assembly and finishing
-8. Recovery behavior
+7. HyperFrames assembly and transition preview
+8. Delivery resolution
+9. Recovery behavior
 
 ## 1. Operating principle
 
@@ -45,6 +46,15 @@ For each selected scene:
 
 Run the Replacement Gate per still before creating any derived ratio or motion asset. Then run the Still Quartet Gate across the full group.
 
+After both internal gates pass, run the default Still Review Gate:
+
+1. present all four key stills together;
+2. identify the scene group and ordered Look IDs;
+3. wait for explicit user approval;
+4. record `pending_user`, `approved`, or `changes_requested`.
+
+Do not start image-to-video generation while key-still approval is pending.
+
 ## 4. Motion planning
 
 Plan the complete sequence before generating clips. For every still assign:
@@ -66,7 +76,17 @@ Choose motions that can connect. Example:
 
 Avoid four unrelated motions that force the editor to hide continuity problems with aggressive effects.
 
-## 5. Lovart execution
+## 5. Video model preflight and Lovart execution
+
+Default to Kling 3.0. Before submitting the first job, preflight the candidate model against the authoritative still and required subject type, input mode, 9:16 ratio, duration family, and silent-output behavior.
+
+Use this fallback path:
+
+1. Kling 3.0;
+2. the current compatible Kling image-to-video replacement if the exact model is unavailable;
+3. Seedance or another Lovart image-to-video model only when preflight confirms that subject-library, real-person, and input restrictions will not block the job.
+
+Record rejected preflights and no-charge failures in `video-state.json`. After one clip succeeds, keep the remaining clips on the same model version unless that version cannot complete a specific clip.
 
 Create one independent image-to-video job per still. Use independent Lovart threads so clips can run concurrently without sharing conversational context.
 
@@ -107,28 +127,55 @@ Classify each clip:
 
 Do not delete imperfect clips automatically. Preserve them as resumable evidence.
 
-## 7. Assembly and finishing
+## 7. HyperFrames assembly and transition preview
 
 After all required clips are accepted:
 
-1. Normalize resolution, frame rate, codec, pixel format, and color space.
-2. Trim clips to their useful motion windows.
-3. Assemble in the planned order.
-4. Add restrained transitions that match adjacent exit and entry states.
-5. Add one BGM track after visual assembly.
-6. Align major cuts or transitions to musical beats where practical.
-7. Apply one unified color treatment and video grain after assembly.
-8. Export the final MP4 and verify duration, dimensions, playback, and audio.
+1. Record every clip's native resolution, frame rate, codec, pixel format, and color space.
+2. Normalize the assembly format without automatic AI upscaling.
+3. Trim clips to their useful motion windows.
+4. Assemble the sequence as an editable HyperFrames composition.
+5. Run the Transition Design Gate and choose one primary transition language.
+6. Add one BGM track after visual assembly.
+7. Align major cuts or transitions to musical beats where practical.
+8. Preserve accepted clip color by default; apply only minimal correction when required.
+9. Do not call GrainLab and do not simulate video grain.
+10. Run HyperFrames lint/check and open a playable Studio preview.
+11. Wait for user approval or requested transition adjustments.
+12. Render the final MP4 only after preview approval, then verify duration, dimensions, playback, and audio.
 
-Do not apply still-image grain before image-to-video generation because the motion model may animate the grain and create temporal flicker.
+Transition defaults:
 
-## 8. Recovery behavior
+- use short hard cuts or a restrained editorial treatment as the safe starting point;
+- avoid long full-body crossfades that create double-subject ghosting;
+- for light leak, use oversized warm overlays and hard-swap scenes under peak light coverage;
+- keep one coherent transition language across the sequence and expose it for user adjustment at preview.
 
-Persist job IDs, thread IDs, input still paths, prompts, status, output paths, and review decisions in `video-state.json`.
+The default assembly step ends at Studio preview, not at an automatic final render.
+
+## 8. Delivery resolution
+
+Store native and delivery resolution separately:
+
+```json
+{
+  "native_clip_resolution": "720x1280",
+  "delivery_resolution": "1080x1920",
+  "ai_upscale": false
+}
+```
+
+Rendering a larger delivery canvas is ordinary resampling, not permission to use an AI upscaler. Do not regenerate or upscale automatically when a clip is below the preferred delivery resolution; report it and let the user decide.
+
+## 9. Recovery behavior
+
+Persist job IDs, thread IDs, input still paths, prompts, model-preflight attempts, key-still approval, status, output paths, transition profile, Studio preview status, native resolution, delivery resolution, and review decisions in `video-state.json`.
 
 On resume:
 
+- stop while key-still approval is pending;
 - skip accepted clips;
 - poll pending jobs before resubmitting;
 - retry only rejected or failed clips;
-- rebuild the final video only when an accepted clip, transition plan, BGM, or finishing setting changes.
+- reopen or rebuild the Studio preview when clips, transition settings, or BGM change;
+- render the final MP4 only after the current preview version is approved.

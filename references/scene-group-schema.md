@@ -22,7 +22,7 @@ Derive IDs from normalized batch-relative paths plus a short hash when duplicate
 
 ```json
 {
-  "schema_version": "0.1-development",
+  "schema_version": "0.2-beta",
   "delivery_mode": "image_and_video",
   "video_scope": {
     "mode": "include",
@@ -39,6 +39,20 @@ Derive IDs from normalized batch-relative paths plus a short hash when duplicate
       "model_id": "model-07",
       "target_ratio": "9:16",
       "target_duration_seconds": 14,
+      "still_review": {
+        "mode": "user_approval",
+        "status": "pending_user"
+      },
+      "video_model": {
+        "preferred": "generate_video_kling_v3",
+        "fallback_policy": "preflight-compatible"
+      },
+      "assembly": {
+        "mode": "hyperframes_preview_then_final",
+        "transition_profile": "editorial-default",
+        "delivery_resolution": "1080x1920",
+        "ai_upscale": false
+      },
       "variants": [
         {
           "variant_id": "look01",
@@ -106,8 +120,29 @@ Minimum clip record:
   "authoritative_still": "results/scene03-look01.png",
   "model_id": "model-07",
   "product_ids": ["top-101", "bottom-204", "shoe-030"],
+  "video_model": "generate_video_kling_v3",
+  "native_clip_resolution": "720x1280",
   "status": "accepted"
 }
 ```
 
 Do not change the still, model, product list, color, or accessories at the image-to-video stage.
+
+Minimum assembly record:
+
+```json
+{
+  "ordered_clip_ids": [
+    "scene03-look01-clip",
+    "scene03-look02-clip",
+    "scene03-look03-clip",
+    "scene03-look04-clip"
+  ],
+  "transition_profile": "light-leak",
+  "studio_preview_status": "pending_user",
+  "native_clip_resolutions": ["720x1280"],
+  "delivery_resolution": "1080x1920",
+  "ai_upscale": false,
+  "grain": "disabled"
+}
+```
