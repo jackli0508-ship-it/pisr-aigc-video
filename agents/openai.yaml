@@ -1,0 +1,7 @@
+interface:
+  display_name: "PISR AIGC Video"
+  short_description: "Plan and orchestrate PISR image-to-video campaigns"
+  default_prompt: "Use $pisr-aigc-video to turn selected PISR scene groups or existing stills into a consistent four-look fashion video."
+
+policy:
+  allow_implicit_invocation: false
