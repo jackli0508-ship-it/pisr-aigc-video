@@ -1,6 +1,6 @@
 ---
 name: pisr-aigc-video
-description: Opt-in planning and orchestration for PISR fashion image-to-video campaigns. Use when the user explicitly invokes this skill or explicitly asks to turn selected Source References, scene groups, or completed PISR stills into coordinated short-form video clips with consistent scenes, models, products, looks, motion, transitions, BGM, and final finishing. This skill is in Beta and must not change the default PISR image workflow unless activated.
+description: Opt-in planning and orchestration for PISR fashion image-to-video campaigns. Use when the user explicitly invokes this skill or explicitly asks to turn selected Source References, scene groups, or completed PISR stills into coordinated short-form video clips with consistent scenes, models, products, looks, motion, transitions, BGM, final finishing, and a scene-grouped authoritative product text manifest. This skill is in Beta and must not change the default PISR image workflow unless activated.
 ---
 
 # PISR AIGC Video
@@ -23,7 +23,8 @@ Turn one selected PISR scene into a coherent short-form fashion video built from
 - four distinct looks;
 - four controlled pose or action variations;
 - four silent image-to-video clips;
-- one HyperFrames-assembled sequence with planned transitions, one BGM track, preserved accepted clip color, and a user-reviewable Studio preview before final export.
+- one HyperFrames-assembled sequence with planned transitions, one BGM track, preserved accepted clip color, and a user-reviewable Studio preview before final export;
+- one concise `video-products.txt` delivery manifest grouped by scene and look.
 
 Default to a 9:16, 12–15 second social video with four clips of roughly 3–4 seconds each unless the user specifies otherwise.
 
@@ -95,6 +96,7 @@ Use this when completed images already exist.
 14. Normalize accepted clips without automatic AI upscaling and assemble them in HyperFrames.
 15. Run the Transition Design Gate, add one BGM track, and create a playable Studio preview by default.
 16. Export the final MP4 only after the user approves the Studio preview; retain resumable state and resolution lineage.
+17. Invoke `pisr-aigc-naming` in video product manifest mode and write the approved scene and look product lists to `results/video-products.txt` before final delivery.
 
 ## Non-negotiable consistency rules
 
@@ -168,11 +170,15 @@ Choose a transition profile before HyperFrames assembly and allow the user to re
 
 Assemble an editable HyperFrames composition and open a playable Studio preview by default. Run the required HyperFrames checks before handoff. Wait for user approval or transition adjustments before rendering the final MP4.
 
+### Video Product Manifest Gate
+
+After the final scene and clip order is locked, hand off authoritative scene-group, variant, and product metadata to `pisr-aigc-naming`. Require one `results/video-products.txt` file grouped by Scene and then Look. Keep every official product name in full, including accessories, and validate that the scene and look counts match the final export. Do not rename the `.mp4` from the complete product list and do not derive product names by inspecting rendered frames.
+
 ## Ownership and handoffs
 
 - `pisr-aigc-master` owns Source Reference classification, model choice, product choice, look construction, placement, product priority, and image-backend routing.
 - `pisr-aigc-lovart` or `pisr-aigc-imagen` owns still-image execution.
-- `pisr-aigc-naming` owns authoritative product-derived filenames.
+- `pisr-aigc-naming` owns authoritative product-derived image filenames and the scene- and look-grouped `video-products.txt` manifest.
 - This skill owns video intent, scene-group structure, motion design, clip order, video-model preflight, transitions, BGM plan, Motion Gate, HyperFrames assembly plan, preview approval, and final video lineage.
 - Use the available Lovart execution capability for uploads, image-to-video calls, job state, retries, and downloads; do not duplicate credentials in this skill.
 - Use HyperFrames for editable assembly, transitions, Studio preview, validation, and final rendering.
@@ -191,6 +197,7 @@ Maintain these logical artifacts:
 - `video-state.json`
 - HyperFrames composition files and Studio preview state
 - final `.mp4` files
+- `results/video-products.txt`
 
 Do not overwrite source stills.
 
